@@ -212,7 +212,7 @@ function merge_file_parts() {
 function avium_build() {
     local avium_device="$1"
     local avium_variant="$2"
-    local avium_target="$3 $4 $5 $6 $7"
+    local -a avium_targets=("${@:3}")
 
     if [ -z "$avium_device" ]; then
         echo -e "Usage: avium build <device> <variant> <target>"
@@ -228,9 +228,9 @@ function avium_build() {
         return 1
         exit 1
     fi
-    if [ -z "$avium_target" ]; then
+    if [ ${#avium_targets[@]} -eq 0 ]; then
         echo "No build target specified. Defaulting to 'bacon'."
-        avium_target="bacon"
+        avium_targets=(bacon)
     fi
     if [ -z "$avium_variant" ]; then
         echo "No build variant specified. Defaulting to 'userdebug'."
@@ -249,7 +249,7 @@ function avium_build() {
         return 1
         exit 1
     fi
-    mka $avium_target -j$(nproc --all)
+    mka "${avium_targets[@]}" -j$(nproc --all)
 }
 function avium_gerrit() {
     local subcommand="$1"
@@ -450,7 +450,8 @@ function avium() {
             remove_gms
             ;;
         build)
-            avium_build "$2" "$3" "$4" "$5" "$6" "$7" "$8"
+            shift
+            avium_build "$@"
             ;;
         gerrit)
             avium_gerrit "$2" "$3" "$4" "$5" "$6" "$7" "$8"
